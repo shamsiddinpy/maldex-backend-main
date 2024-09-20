@@ -7,10 +7,10 @@ ALLOWED_HOSTS = ['*']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'prod_db',
-        'USER': 'modago',
-        "PASSWORD": "dbpass",
-        "HOST": "localhost",
-        "PORT": 5432,
+        'NAME': os.environ.get('NAME'),
+        'USER': os.environ.get('USER'),
+        "PASSWORD": os.environ.get('PASSWORD'),
+        "HOST": os.environ.get('HOST'),
+        "PORT": os.environ.get('PORT'),
     }
 }
