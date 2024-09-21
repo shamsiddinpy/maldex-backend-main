@@ -140,16 +140,20 @@ AUTH_USER_MODEL = "auth_app.CustomUser"
 
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
-        "JWT [Bearer {JWT}]": {
-            "name": "Authorization",
+        "Bearer": {
             "type": "apiKey",
+            "name": "Authorization",
             "in": "header",
+            "description": "JWT Token in the format: Bearer {token}"
         }
     },
+    "SECURITY_REQUIREMENTS": [
+        {"Bearer": []}
+    ],
+    "USE_SESSION_AUTH": False,
     "TITLE": "Maldex backend",
     "DESCRIPTION": "Maldex backend",
     "VERSION": "0.1.0",
-    "USE_SESSION_AUTH": False,
 }
 
 CKEDITOR_5_CONFIGS = {

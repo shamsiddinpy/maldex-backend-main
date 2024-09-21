@@ -34,7 +34,7 @@ class CategoryListView(APIView):
         """
         Get all product categories.
         """
-        queryset = ProductCategories.objects.all().prefetch_related('parent', 'children')\
+        queryset = ProductCategories.objects.all().prefetch_related('parent', 'children') \
             .filter(parent=None).order_by('order')
         filterset = ProductCategoryFilter(request.GET, queryset=queryset)
         if filterset.is_valid():
@@ -42,7 +42,8 @@ class CategoryListView(APIView):
         is_popular = bool(request.query_params.get('is_popular', None))
         if is_popular is True:
             queryset = queryset.order_by('order_top')
-        serializers = MainCategorySerializer(queryset.order_by('-is_available', 'order', 'order_by_site'), many=True, context={'request': request})
+        serializers = MainCategorySerializer(queryset.order_by('-is_available', 'order', 'order_by_site'), many=True,
+                                             context={'request': request})
         return success_response(serializers.data)
 
     @swagger_auto_schema(
