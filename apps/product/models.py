@@ -95,7 +95,7 @@ def post_save_category(sender, instance, **kwargs):
 
     ava_categories = ProductCategories.objects.filter(is_available=True, parent=None).order_by('order')
     for num, category in enumerate(ava_categories):
-        ProductCategories.objects.filter(pk=category.pk).update(order=num+1)
+        ProductCategories.objects.filter(pk=category.pk).update(order=num + 1)
     ProductCategories.objects.filter(is_available=False, parent=None).update(order=None)
 
 
@@ -152,7 +152,8 @@ class Products(models.Model):
     pack = models.JSONField(null=True, blank=True)
     prints = models.JSONField(null=True, blank=True)
     warehouse = models.JSONField(null=True, blank=True)
-    colorID = models.ForeignKey(Colors, on_delete=models.CASCADE, verbose_name='Цвета', related_name='products', null=True)
+    colorID = models.ForeignKey(Colors, on_delete=models.CASCADE, verbose_name='Цвета', related_name='products',
+                                null=True)
     sizes = models.JSONField(null=True, blank=True)
     is_popular = models.BooleanField(default=False, verbose_name="Популярен?", null=True, blank=True)
     is_hit = models.BooleanField(default=False, verbose_name="Хит?", null=True, blank=True)
@@ -169,9 +170,11 @@ class Products(models.Model):
         if not self.common_name:
             color_name = self.colorID.name.lower()
             product_name = self.name.replace('\xa0', ' ').lower()
-            without_color_name = product_name[:product_name.index(color_name)] if color_name in product_name else product_name
+            without_color_name = product_name[
+                                 :product_name.index(color_name)] if color_name in product_name else product_name
             space_index = without_color_name[::-1].find(' ')
-            self.common_name = without_color_name[:- space_index - 1] if len(self.name.split()) > 1 and color_name in product_name else product_name
+            self.common_name = without_color_name[:- space_index - 1] if len(
+                self.name.split()) > 1 and color_name in product_name else product_name
 
         if not self.id:
             last_instance = Products.objects.all().order_by('id').last()

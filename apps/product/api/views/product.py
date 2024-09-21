@@ -1,6 +1,7 @@
 from collections import defaultdict
+from django.core.cache import cache
 
-from django.db.models import Count, Prefetch
+from django.db.models import Count, Prefetch, Q
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.permissions import AllowAny
@@ -30,7 +31,7 @@ def get_counts(request):
         'new': new_product_count,
         'hit': hit_product_count,
         'popular': popular_product_count
-    })
+    })  # Todo
 
 
 class ProductsListView(APIView, PaginationMethod):

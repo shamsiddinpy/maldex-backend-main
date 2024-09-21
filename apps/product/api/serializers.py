@@ -75,27 +75,38 @@ class CategoryListSerializers(serializers.ModelSerializer):
         instance.order = validated_data.get('order', instance.order_top)
         instance.name = validated_data.get('name', instance.name)
         instance.parent = validated_data.get('parent', instance.parent)
-        instance.is_popular = validated_data.get('is_popular', instance.is_popular)
-        # is_available o'zgartirilganda is_popular ni saqlab qolish
-        new_is_available = validated_data.get('is_available', instance.is_available)  # Todo
+        # instance.is_popular = validated_data.get('is_popular', instance.is_popular)
         if 'is_available' in validated_data:
-            instance.is_available = new_is_available
-            # Agar is_available True bo'lsa, is_popular qiymatini o'zgartirmaymiz
-            if new_is_available:
-                validated_data.pop('is_available', None)
-        # is_popular ni faqat is_available True bo'lganda o'zgartiramiz
-        if instance.new_is_available:
-            instance.is_popular = validated_data.get('is_popular', instance.is_popular)
+            instance.is_available = validated_data['is_available']
+        if 'is_popular' in validated_data:
+            instance.is_popular = validated_data['is_popular']
+
         instance.is_hit = validated_data.get('is_hit', instance.is_hit)
         instance.is_new = validated_data.get('is_new', instance.is_new)
         items = validated_data.pop('items', instance.discounts)
-        discounts = []
-        if items and items not in ['[]', '', ' ', [''], ['[]']]:
-            for item in items:
-                discounts.append({'name': item.get('[name]'), 'count': item.get('[count]')})
-        instance.discounts = discounts
-        if discounts:
-            Products.objects.filter(categoryId=instance).update(discounts=discounts)
+        # discounts = []
+        # if items and items not in ['[]', '', ' ', [''], ['[]']]:
+        #     for item in items:
+        #         discounts.append({'name': item.get('[name]'), 'count': item.get('[count]')})
+        # instance.discounts = discounts
+        # if discounts:
+        #     Products.objects.filter(categoryId=instance).update(discounts=discounts)
+
+        if items:
+            discounts = []
+            for itm in items:
+                if isinstance(itm, dict):
+                    name = itm.get('name')
+                    count = itm.get('count')
+                    if name and count:
+                        discounts.append({'name': name, 'count': count})
+
+                elif isinstance(itm, str):
+                    discounts.append({'name': itm, 'count': 1})
+
+            if discounts:
+                instance.discounts = discounts
+                Products.objects.filter(categoryId=instance).update(discounts=instance.discounts)
 
         instance.save()
         return instance
