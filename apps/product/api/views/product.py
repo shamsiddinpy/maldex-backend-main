@@ -31,7 +31,7 @@ def get_counts(request):
         'new': new_product_count,
         'hit': hit_product_count,
         'popular': popular_product_count
-    })  # Todo
+    })
 
 
 class ProductsListView(APIView, PaginationMethod):

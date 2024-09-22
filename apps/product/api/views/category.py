@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,12 +24,14 @@ class CategoryListView(APIView):
     API endpoint to list and create product categories.
     """
     permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
 
     @swagger_auto_schema(
         operation_description="Retrieve a list of categories",
         manual_parameters=[],
         tags=['Categories'],
         responses={200: CategoryListSerializers(many=True)}
+
     )
     def get(self, request):
         """
@@ -183,6 +186,8 @@ def get_main_categories(request):
                      method='GET')
 @api_view(['GET'])
 def get_subcategories(request, category_id):
+    if category_id == 'null':
+        return success_response([])
     subcategories = list(ProductCategories.objects.filter(parent__id=category_id).values('id', 'name'))
     return success_response(subcategories)
 
