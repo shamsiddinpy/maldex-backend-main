@@ -186,10 +186,12 @@ def get_main_categories(request):
                      method='GET')
 @api_view(['GET'])
 def get_subcategories(request, category_id):
-    if category_id == 'null':
+    try:
+        category_id = int(category_id)
+        subcategories = list(ProductCategories.objects.filter(parent__id=category_id).values('id', 'name'))
+        return success_response(subcategories)
+    except ValueError:
         return success_response([])
-    subcategories = list(ProductCategories.objects.filter(parent__id=category_id).values('id', 'name'))
-    return success_response(subcategories)
 
 
 @api_view(['GET'])
