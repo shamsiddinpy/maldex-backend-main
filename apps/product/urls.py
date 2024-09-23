@@ -19,7 +19,7 @@ urlpatterns = [
     path('categories/uploader/', category.CategoryUploaderListView.as_view()),
     path('external/categories/', category.ExternalCategoryList.as_view()),
     # Endpoint to get main categories
-    path('categories/get_subcategories/<category_id>/', category.get_subcategories, name='get_subcategories'),  # Todo
+    path('categories/get_subcategories/<category_id>/', category.get_subcategories, name='get_subcategories'),
     # Endpoint to get subcategories of a main category
     path('categories/get_tertiary_categories/<subcategory_id>/', category.get_tertiary_categories,
          name='get_tertiary_categories'),  # Endpoint to get tertiary categories of a subcategory
