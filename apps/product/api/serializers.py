@@ -169,7 +169,8 @@ class MainCategorySerializer(serializers.ModelSerializer):
         discounts = []
         if items and items not in ['[]', '', ' ', [''], ['[]']]:
             for item in items:
-                discounts.append({'name': item.get('[name]'), 'count': item.get('[count]')})
+                if isinstance(item, dict):
+                    discounts.append({'name': item.get('[name]'), 'count': item.get('[count]')})
         validated_data['discounts'] = discounts
         category = super().create(validated_data)
         if discounts:

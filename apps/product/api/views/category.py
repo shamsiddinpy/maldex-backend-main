@@ -78,7 +78,7 @@ class CategoryListView(APIView):
         page = paginator.paginate_queryset(queryset, request)
 
         serializer = MainCategorySerializer(page, many=True, context={'request': request})
-        return paginator.get_paginated_response(serializer.data)  # Todo
+        return paginator.get_paginated_response(serializer.data)
 
     @swagger_auto_schema(
         request_body=MainCategorySerializer,
