@@ -1,22 +1,24 @@
+from django.db.models import Count, Prefetch, Q
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.product.models import ProductCategories, ExternalCategory, Products
 from apps.product.api.serializers import (
     CategoryListSerializers, MainCategorySerializer, CategoryProductsSerializer, SubCategorySerializer,
     TertiaryCategorySerializer, CategoryAutoUploaderSerializer, ExternalCategoryListSerializer, CategoryMoveSerializer,
     HomeCategorySerializer
 )
+from apps.product.filters import ProductCategoryFilter
+from apps.product.models import ProductCategories, ExternalCategory, Products
 from utils.pagination import StandardResultsSetPagination
 from utils.responses import bad_request_response, success_response, success_created_response, success_deleted_response
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-from apps.product.filters import ProductCategoryFilter
 
 
 class CategoryListView(APIView):
@@ -26,28 +28,57 @@ class CategoryListView(APIView):
     permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
 
+    # @swagger_auto_schema(
+    #     operation_description="Retrieve a list of categories",
+    #     manual_parameters=[],
+    #     tags=['Categories'],
+    #     responses={200: CategoryListSerializers(many=True)}
+    #
+    # )
+    # def get(self, request):
+    #     """
+    #     Get all product categories.
+    #     """
+    #     queryset = ProductCategories.objects.all().prefetch_related('parent', 'children') \
+    #         .filter(parent=None).order_by('order')
+    #     filterset = ProductCategoryFilter(request.GET, queryset=queryset)
+    #     if filterset.is_valid():
+    #         queryset = filterset.qs
+    #     is_popular = bool(request.query_params.get('is_popular', None))
+    #     if is_popular is True:
+    #         queryset = queryset.order_by('order_top')
+    #     serializers = MainCategorySerializer(queryset.order_by('-is_available', 'order', 'order_by_site'), many=True,
+    #                                          context={'request': request})
+    #     return success_response(serializers.data)zx
+    @method_decorator(cache_page(60 * 15))  # 15 minut xeshda saqlab turadi
     @swagger_auto_schema(
         operation_description="Retrieve a list of categories",
         manual_parameters=[],
         tags=['Categories'],
         responses={200: CategoryListSerializers(many=True)}
-
     )
     def get(self, request):
-        """
-        Get all product categories.
-        """
-        queryset = ProductCategories.objects.all().prefetch_related('parent', 'children') \
-            .filter(parent=None).order_by('order')
+        queryset = ProductCategories.objects.filter(parent=None).prefetch_related(
+            Prefetch('children', queryset=ProductCategories.objects.all()),
+            'children__children'
+        ).annotate(
+            product_count=Count('products', distinct=True),
+            recently_product_count=Count('products', filter=Q(products__is_new=True), distinct=True)
+        ).order_by('-is_available', 'order', 'order_by_site')
+
         filterset = ProductCategoryFilter(request.GET, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
-        is_popular = bool(request.query_params.get('is_popular', None))
-        if is_popular is True:
+
+        is_popular = request.query_params.get('is_popular') == 'true'
+        if is_popular:
             queryset = queryset.order_by('order_top')
-        serializers = MainCategorySerializer(queryset.order_by('-is_available', 'order', 'order_by_site'), many=True,
-                                             context={'request': request})
-        return success_response(serializers.data)
+
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(queryset, request)
+
+        serializer = MainCategorySerializer(page, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)  # Todo
 
     @swagger_auto_schema(
         request_body=MainCategorySerializer,
