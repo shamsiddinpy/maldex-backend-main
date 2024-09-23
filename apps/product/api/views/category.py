@@ -28,57 +28,28 @@ class CategoryListView(APIView):
     permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
 
-    # @swagger_auto_schema(
-    #     operation_description="Retrieve a list of categories",
-    #     manual_parameters=[],
-    #     tags=['Categories'],
-    #     responses={200: CategoryListSerializers(many=True)}
-    #
-    # )
-    # def get(self, request):
-    #     """
-    #     Get all product categories.
-    #     """
-    #     queryset = ProductCategories.objects.all().prefetch_related('parent', 'children') \
-    #         .filter(parent=None).order_by('order')
-    #     filterset = ProductCategoryFilter(request.GET, queryset=queryset)
-    #     if filterset.is_valid():
-    #         queryset = filterset.qs
-    #     is_popular = bool(request.query_params.get('is_popular', None))
-    #     if is_popular is True:
-    #         queryset = queryset.order_by('order_top')
-    #     serializers = MainCategorySerializer(queryset.order_by('-is_available', 'order', 'order_by_site'), many=True,
-    #                                          context={'request': request})
-    #     return success_response(serializers.data)zx
-    @method_decorator(cache_page(60 * 15))  # 15 minut xeshda saqlab turadi
     @swagger_auto_schema(
         operation_description="Retrieve a list of categories",
         manual_parameters=[],
         tags=['Categories'],
         responses={200: CategoryListSerializers(many=True)}
+
     )
     def get(self, request):
-        queryset = ProductCategories.objects.filter(parent=None).prefetch_related(
-            Prefetch('children', queryset=ProductCategories.objects.all()),
-            'children__children'
-        ).annotate(
-            product_count=Count('products', distinct=True),
-            recently_product_count=Count('products', filter=Q(products__is_new=True), distinct=True)
-        ).order_by('-is_available', 'order', 'order_by_site')
-
+        """
+        Get all product categories.
+        """
+        queryset = ProductCategories.objects.all().prefetch_related('parent', 'children') \
+            .filter(parent=None).order_by('order')
         filterset = ProductCategoryFilter(request.GET, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
-
-        is_popular = request.query_params.get('is_popular') == 'true'
-        if is_popular:
+        is_popular = bool(request.query_params.get('is_popular', None))
+        if is_popular is True:
             queryset = queryset.order_by('order_top')
-
-        paginator = self.pagination_class()
-        page = paginator.paginate_queryset(queryset, request)
-
-        serializer = MainCategorySerializer(page, many=True, context={'request': request})
-        return paginator.get_paginated_response(serializer.data)
+        serializers = MainCategorySerializer(queryset.order_by('-is_available', 'order', 'order_by_site'), many=True,
+                                             context={'request': request})
+        return success_response(serializers.data)
 
     @swagger_auto_schema(
         request_body=MainCategorySerializer,
