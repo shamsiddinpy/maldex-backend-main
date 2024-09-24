@@ -15,7 +15,7 @@ User = get_user_model()
 class ProductCategories(models.Model):
     """Model to represent product categories."""
     id = models.IntegerField(primary_key=True, editable=False, unique=True, verbose_name='Уникальный идентификатор')
-    name = models.CharField(max_length=550, verbose_name="Название категории")
+    name = models.CharField(max_length=550, verbose_name="Название категории", db_index=True)
     title = models.CharField(max_length=500, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
@@ -72,6 +72,7 @@ class ProductCategories(models.Model):
         ordering = ('-is_available', 'order', 'order_by_site')
         verbose_name = "Категория"
         verbose_name_plural = "Категория"
+
 
 
 @receiver(pre_save, sender=ProductCategories)

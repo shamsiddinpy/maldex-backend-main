@@ -163,6 +163,9 @@ class MainCategorySerializer(serializers.ModelSerializer):
             'order_top', 'icon', 'logo', 'children', 'created_at', 'updated_at', 'site', 'seo_title', 'seo_description',
             'items', 'discounts', 'products'
         ]
+        read_only_fields = [
+            'children', 'products', 'seo_description', 'seo_title', 'updated_at', 'created_at', 'site'
+        ]
 
     def create(self, validated_data):
         items = validated_data.pop('items', None)

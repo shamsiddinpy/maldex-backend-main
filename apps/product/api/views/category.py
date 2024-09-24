@@ -1,7 +1,6 @@
-from django.db.models import Count, Prefetch, Q
+from django.core.cache import cache
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -17,16 +16,19 @@ from apps.product.api.serializers import (
 )
 from apps.product.filters import ProductCategoryFilter
 from apps.product.models import ProductCategories, ExternalCategory, Products
+from config.pagination import CustomPagination
 from utils.pagination import StandardResultsSetPagination
 from utils.responses import bad_request_response, success_response, success_created_response, success_deleted_response
+
+CACHE_TTL = 3  # Todo
 
 
 class CategoryListView(APIView):
     """
     API endpoint to list and create product categories.
     """
-    permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
+    permission_classes = (AllowAny,)
 
     @swagger_auto_schema(
         operation_description="Retrieve a list of categories",
@@ -36,11 +38,13 @@ class CategoryListView(APIView):
 
     )
     def get(self, request):
-        """
-        Get all product categories.
-        """
+        cache_key = 'home_category'
+        cache_data = cache.get(cache_key)
+        if cache_data is not None:
+            return success_response(cache_data)
         queryset = ProductCategories.objects.all().select_related('parent').prefetch_related('children__parent').filter(
             parent=None).order_by('order')
+
         filterset = ProductCategoryFilter(request.GET, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
@@ -49,6 +53,7 @@ class CategoryListView(APIView):
             queryset = queryset.order_by('order_top')
         serializers = MainCategorySerializer(queryset.order_by('-is_available', 'order', 'order_by_site'), many=True,
                                              context={'request': request})
+        cache.set(cache_key, serializers.data, CACHE_TTL)
         return success_response(serializers.data)
 
     @swagger_auto_schema(
@@ -64,6 +69,7 @@ class CategoryListView(APIView):
         serializers = MainCategorySerializer(data=request.data, context={'request': request})
         if serializers.is_valid(raise_exception=True):
             serializers.save()
+            cache.delete('home_category')
             return success_created_response(serializers.data)
         return bad_request_response(serializers.errors)
 
@@ -75,6 +81,9 @@ class CategoryDetailView(APIView):
     pagination_class = StandardResultsSetPagination
     permission_classes = [AllowAny]
 
+    def get_cache_key(self, pk):
+        return f'category_detail_{pk}'  # Todo
+
     @swagger_auto_schema(
         operation_description="Retrieve a specific product category",
         tags=['Categories'],
@@ -84,8 +93,13 @@ class CategoryDetailView(APIView):
         """
         Retrieve a specific product category.
         """
+        cache_key = self.get_cache_key(pk)
+        cache_data = cache.get(cache_key)
+        if cache_data is not None:
+            return success_response(cache_data)
         queryset = get_object_or_404(ProductCategories, pk=pk)
         serializers = MainCategorySerializer(queryset, context={'request': request})
+        cache.set(cache_key, serializers.data, CACHE_TTL)
         return success_response(serializers.data)
 
     @swagger_auto_schema(
@@ -110,6 +124,7 @@ class CategoryDetailView(APIView):
         })
         if serializers.is_valid(raise_exception=True):
             serializers.save()
+            cache.delete(self.get_cache_key(pk))
             return success_response(serializers.data)
         return bad_request_response(serializers.errors)
 
@@ -124,6 +139,7 @@ class CategoryDetailView(APIView):
         """
         queryset = get_object_or_404(ProductCategories, pk=pk)
         queryset.delete()
+        cache.delete(self.get_cache_key(pk))
         return success_deleted_response("Successfully deleted")
 
 

@@ -398,3 +398,10 @@ CSRF_COOKIE_SECURE = False
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 2 ** 20  # set data upload max size is 100 MB
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}

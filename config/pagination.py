@@ -6,7 +6,7 @@ class CustomPagination(pagination.PageNumberPagination):
     # Specify the query parameter used to determine page size
     page_size_query_param = "limit"
     # Default page size
-    page_size = 40
+    page_size = 20
 
     def get_paginated_response(self, data):
         """
