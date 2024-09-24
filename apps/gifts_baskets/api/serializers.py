@@ -24,7 +24,6 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class GiftBasketCategoryListSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = GiftsBasketCategory
         fields = ['id', 'name', 'is_available', 'parent']
@@ -62,7 +61,6 @@ class GiftsBasketProductSerializers(serializers.ModelSerializer):
 
 
 class GiftsBasketProductDetailsSerializers(serializers.ModelSerializer):
-
     class Meta:
         model = GiftsBasketProduct
         fields = ['id', 'product_sets', 'quantity']
@@ -97,7 +95,7 @@ class GiftBasketListSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = GiftsBaskets
-        fields = ['id', 'title', 'description', 'gift_basket_category', 'category_data',  'basket_images',
+        fields = ['id', 'title', 'description', 'gift_basket_category', 'category_data', 'basket_images',
                   'images_data', 'basket_products', 'products_data', 'other_sets',
                   'article', 'price', 'price_type', 'discount_price', 'small_header', 'created_at', 'tags']
 
@@ -181,7 +179,8 @@ class GiftBasketDetailSerializers(serializers.ModelSerializer):
     class Meta:
         model = GiftsBaskets
         fields = ['title', 'id', 'description', 'gift_basket_category', 'gift_basket_product', 'gift_basket_images',
-                  'other_sets', 'article', 'price', 'price_type', 'discount_price', 'small_header', 'created_at', 'tags']
+                  'other_sets', 'article', 'price', 'price_type', 'discount_price', 'small_header', 'created_at',
+                  'tags']
 
     def get_gift_basket_images(self, obj):
         children_serializer = GiftsBasketImagesSerializers(obj.basket_images.all(), many=True, context=self.context)
@@ -194,7 +193,7 @@ class GiftBasketDetailSerializers(serializers.ModelSerializer):
 
     def get_gift_basket_category(self, obj):
         children_serializer = GiftBasketCategoryListSerializer(obj.gift_basket_category.all(), many=True,
-                                                               context=self.context.get('request'))
+                                                               context=self.context)
         return children_serializer.data
 
 

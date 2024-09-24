@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.status import HTTP_404_NOT_FOUND
 from rest_framework.views import APIView
 
 from utils.responses import (
@@ -10,7 +11,7 @@ from utils.responses import (
     success_created_response,
     success_deleted_response,
 )
-from utils.pagination import PaginationMethod
+from utils.pagination import PaginationMethod, StandardResultsSetPagination
 from utils.expected_fields import check_required_key
 from drf_yasg.utils import swagger_auto_schema
 from apps.gifts_baskets.api.serializers import *
@@ -18,6 +19,7 @@ from apps.gifts_baskets.api.serializers import *
 
 class GiftBasketListView(APIView):
     permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
 
     @swagger_auto_schema(operation_description="Retrieve a list of gift baskets",
                          tags=['Gifts Baskets'],
@@ -58,19 +60,32 @@ class GiftBasketDetailView(APIView, PaginationMethod):
 
     """ Category Put View """
 
+    # @swagger_auto_schema(request_body=GiftBasketListSerializers,
+    #                      operation_description="Gifts Baskets update",
+    #                      tags=['Gifts Baskets'],
+    #                      responses={200: GiftBasketListSerializers(many=False)})
+    # def put(self, request, pk):
+    #     valid_fields = {'name', 'parent', 'is_available'}
+    #     unexpected_fields = check_required_key(request, valid_fields)
+    #     if unexpected_fields:
+    #         return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
+    #
+    #     queryset = get_object_or_404(GiftsBaskets, pk=pk)
+    #     serializer = GiftBasketListSerializers(instance=queryset, data=request.data,
+    #                                            context={'request': request})
+    #     if serializer.is_valid(raise_exception=True):
+    #         serializer.save()
+    #         return success_response(serializer.data)
+    #     return bad_request_response(serializer.errors)
+
     @swagger_auto_schema(request_body=GiftBasketListSerializers,
                          operation_description="Gifts Baskets update",
                          tags=['Gifts Baskets'],
                          responses={200: GiftBasketListSerializers(many=False)})
     def put(self, request, pk):
-        valid_fields = {'name', 'parent', 'is_available'}
-        unexpected_fields = check_required_key(request, valid_fields)
-        if unexpected_fields:
-            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
-
         queryset = get_object_or_404(GiftsBaskets, pk=pk)
         serializer = GiftBasketListSerializers(instance=queryset, data=request.data,
-                                               context={'request': request})
+                                               context={'request': request}, partial=True)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return success_response(serializer.data)
@@ -78,13 +93,23 @@ class GiftBasketDetailView(APIView, PaginationMethod):
 
     """ Category Delete View """
 
+    # @swagger_auto_schema(operation_description="Delete a gift basket",
+    #                      tags=['Gifts Baskets'],
+    #                      responses={204: 'No content'})
+    # def delete(self, request, pk):
+    #     queryset = get_object_or_404(pk=pk)
+    #     queryset.delete()
+    #     return success_deleted_response("Successfully deleted")
     @swagger_auto_schema(operation_description="Delete a gift basket",
                          tags=['Gifts Baskets'],
-                         responses={204: 'No content'})
+                         responses={204: 'No content', 404: 'Gift basket not found'})
     def delete(self, request, pk):
-        queryset = get_object_or_404(GiftsBaskets, pk=pk)
-        queryset.delete()
-        return success_deleted_response("Successfully deleted")
+        try:
+            queryset = GiftsBaskets.objects.get(pk=pk)
+            queryset.delete()
+            return success_deleted_response("Successfully deleted")
+        except GiftsBaskets.DoesNotExist:
+            return Response({"detail": "Gift basket not found."}, status=HTTP_404_NOT_FOUND)
 
 
 class GiftsBasketProductDetailView(APIView):

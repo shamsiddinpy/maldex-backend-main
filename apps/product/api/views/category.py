@@ -1,6 +1,5 @@
 from django.core.cache import cache
 from django.shortcuts import get_object_or_404
-from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -16,11 +15,10 @@ from apps.product.api.serializers import (
 )
 from apps.product.filters import ProductCategoryFilter
 from apps.product.models import ProductCategories, ExternalCategory, Products
-from config.pagination import CustomPagination
 from utils.pagination import StandardResultsSetPagination
 from utils.responses import bad_request_response, success_response, success_created_response, success_deleted_response
 
-CACHE_TTL = 3  # Todo
+CACHE_TTL = 10
 
 
 class CategoryListView(APIView):
@@ -212,6 +210,20 @@ def get_subcategories(request, category_id):
         return success_response([])
 
 
+@swagger_auto_schema(manual_parameters=[subcategory_id_param], tags=['Categories'],
+                     responses={200: TertiaryCategorySerializer(many=True)},
+                     operation_description='Get all tertiary categories',
+                     method='GET')
+@api_view(['GET'])
+def get_tertiary_categories(request, subcategory_id):
+    try:
+        subcategory_id = int(subcategory_id)
+        tertiary_categories = list(ProductCategories.objects.filter(parent_id=subcategory_id).values('id', 'name'))
+        return success_response(tertiary_categories)
+    except ValueError:
+        return success_response([])
+
+
 @api_view(['GET'])
 def get_all_subcategories(request):
     search = request.GET.get('search')
@@ -226,16 +238,6 @@ def get_all_subcategories(request):
         count = Products.objects.filter(categoryId__id__in=ids).count()
         response.append({'name': cat.name, 'id': cat.id, 'site': cat.site, 'count': count})
     return Response(response)
-
-
-@swagger_auto_schema(manual_parameters=[subcategory_id_param], tags=['Categories'],
-                     responses={200: TertiaryCategorySerializer(many=True)},
-                     operation_description='Get all tertiary categories',
-                     method='GET')
-@api_view(['GET'])
-def get_tertiary_categories(request, subcategory_id):
-    tertiary_categories = list(ProductCategories.objects.filter(parent_id=subcategory_id).values('id', 'name'))
-    return success_response(tertiary_categories)
 
 
 class ExternalCategoryList(APIView):
