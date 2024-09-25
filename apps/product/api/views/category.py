@@ -18,7 +18,7 @@ from apps.product.models import ProductCategories, ExternalCategory, Products
 from utils.pagination import StandardResultsSetPagination
 from utils.responses import bad_request_response, success_response, success_created_response, success_deleted_response
 
-CACHE_TTL = 10
+CACHE_TTL = 20
 
 
 class CategoryListView(APIView):
