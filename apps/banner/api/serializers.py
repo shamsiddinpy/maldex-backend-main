@@ -99,15 +99,7 @@ class BannerCarouselListSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
 
-    # def validate_media(self, media):
-    #     media_type = media.content_type.split('/')[0]
-    #     if media_type not in ['image', 'video']:
-    #         raise serializers.ValidationError('Invalid media type')
-    #     return media
-
     def validate_media(self, media):
-        if not media:
-            raise serializers.ValidationError("Media file is required.")
         media_type = media.content_type.split('/')[0]
         if media_type not in ['image', 'video']:
             raise serializers.ValidationError('Invalid media type')

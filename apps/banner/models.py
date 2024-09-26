@@ -51,7 +51,7 @@ class BannerCarousel(models.Model):
     name = models.CharField(_('Название баннерной карусели'), max_length=155, null=True, blank=True)
     media = models.FileField(upload_to='banner_carousel/')
     media_type = models.CharField(max_length=255)
-    product = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True,)
+    product = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True, )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата публикации')
 
     def __str__(self):
