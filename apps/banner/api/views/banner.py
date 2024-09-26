@@ -7,6 +7,7 @@ from apps.banner.api.serializers import (
     BannerListSerializer,
     BannerCarouselListSerializer, BannerProductListSerializer
 )
+from utils.pagination import StandardResultsSetPagination
 
 from utils.responses import (
     bad_request_response,
@@ -125,11 +126,10 @@ class BannerCarouselListView(APIView):
                          tags=['Banner Carousel'],
                          responses={201: BannerCarouselListSerializer(many=False)})
     def post(self, request):
-        valid_fields = {'name', 'product_id', 'video', 'title1', 'url1', 'title2', 'url2', 'media'}
+        valid_fields = {'name', 'product', 'product_id', 'video', 'title1', 'url1', 'title2', 'url2', 'media'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
-
         serializer = BannerCarouselListSerializer(data=request.data, context={'request': request})
         if serializer.is_valid(raise_exception=True):
             serializer.save()
@@ -139,6 +139,7 @@ class BannerCarouselListView(APIView):
 
 class BannerCarouselDetailView(APIView):
     permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
 
     @swagger_auto_schema(operation_description="Retrieve Banners",
                          tags=['Banner Carousel'],

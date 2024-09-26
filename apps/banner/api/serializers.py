@@ -7,7 +7,6 @@ from apps.product.api.serializers import ProductDetailSerializers
 
 
 class BannerProductSerializers(ProductDetailSerializers):
-
     class Meta:
         model = Products
         fields = ['id', 'name', 'images_set', 'site']
@@ -33,7 +32,6 @@ class BannerProductListSerializer(serializers.ModelSerializer):
 
 
 class ButtonSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Button
         fields = ['title', 'url']
@@ -78,7 +76,8 @@ class BannerCarouselListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BannerCarousel
-        fields = ['id', 'name', 'media', 'media_type', 'product', 'product_id', 'buttons', 'title1', 'url1', 'title2', 'url2']
+        fields = ['id', 'name', 'media', 'media_type', 'product', 'product_id', 'buttons', 'title1', 'url1', 'title2',
+                  'url2']
 
     def create(self, validated_data):
         product_id = validated_data.pop('product_id', None)
@@ -100,7 +99,15 @@ class BannerCarouselListSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
 
+    # def validate_media(self, media):
+    #     media_type = media.content_type.split('/')[0]
+    #     if media_type not in ['image', 'video']:
+    #         raise serializers.ValidationError('Invalid media type')
+    #     return media
+
     def validate_media(self, media):
+        if not media:
+            raise serializers.ValidationError("Media file is required.")
         media_type = media.content_type.split('/')[0]
         if media_type not in ['image', 'video']:
             raise serializers.ValidationError('Invalid media type')

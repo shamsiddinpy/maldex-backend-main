@@ -1,12 +1,17 @@
 from django.core.cache import cache
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 
 from apps.product.api.serializers import (
     CategoryListSerializers, MainCategorySerializer, CategoryProductsSerializer, SubCategorySerializer,
@@ -146,7 +151,7 @@ class HomeCategoryView(APIView):
     API endpoint to handle the home category.
     """
     pagination_class = StandardResultsSetPagination
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny, ]
 
     # @method_decorator(cache_page(600))
     @swagger_auto_schema(
@@ -242,6 +247,7 @@ def get_all_subcategories(request):
 
 class ExternalCategoryList(APIView):
     permission_classes = [AllowAny]
+
 
     @swagger_auto_schema(
         operation_description="Retrieve category or sub categories for home view",

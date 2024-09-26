@@ -1,4 +1,6 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import SimpleRouter
+
 from apps.product.api.views import product, category
 from apps.product.api.views import oasis_json
 from apps.product.api.views.category import get_all_subcategories, CategoryMove
@@ -8,8 +10,11 @@ from apps.product.api.views.product import SiteLogoView, get_counts, BrandList, 
 from apps.product.api.views.product_filter import FilterProductDetailView, FilterProductListView, \
     FilterProductsDetailView
 
+# router = SimpleRouter(False)
+# router.register('categories/', CategoryModelViewSet, basename='categories')
 urlpatterns = [
     # Product URLs
+
     path('', product.ProductsListView.as_view()),  # List view for all products
     path('sites-count/', product.SiteCountsView.as_view()),  # Endpoint to get site counts
     path('counts/', get_counts, name='products-counts'),  # Endpoint to get counts for product options
@@ -26,6 +31,7 @@ urlpatterns = [
     path('categories/subs/', get_all_subcategories, name='all_subcategories'),
 
     # Category URLs
+
     path('categories/', category.CategoryListView.as_view()),  # List view for all categories
     path('categories/move/', CategoryMove.as_view()),  # List view for all categories
     path('category/<int:pk>/', category.CategoryDetailView.as_view()),  # Detail view for a specific category
@@ -51,5 +57,7 @@ urlpatterns = [
     # Image URLs
     path('image/<image_id>/', ProductImageView.as_view(), name='image'),  # Endpoint to get image by ID
     path('auto/uploader/', product.ProductAutoUploaderView.as_view()),
-    path('auto/uploader/<int:pk>/', product.ProductAutoUploaderDetailView.as_view())
+    path('auto/uploader/<int:pk>/', product.ProductAutoUploaderDetailView.as_view()),
+
+
 ]

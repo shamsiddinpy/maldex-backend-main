@@ -34,7 +34,7 @@ class BannerCarouselAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     readonly_fields = ['created_at', 'banner_carousel_video']
 
     fieldsets = [
-        (None, {'fields': ['name', 'video', 'product', 'created_at']}),
+        (None, {'fields': ['name', 'media', 'product', 'created_at']}),
     ]
 
     def banner_carousel_video(self, obj):
