@@ -7,5 +7,5 @@ urlpatterns = [
     path('<uuid:pk>/', banner.BannerDetailView.as_view()),
     path('product/<int:pk>/', banner.BannerProductDetailView.as_view()),
     path('carousel/', banner.BannerCarouselListView.as_view()),
-    path('carousel/<int:pk>/', banner.BannerCarouselDetailView.as_view()),
+    path('carousel/<uuid:pk>/', banner.BannerCarouselDetailView.as_view()),
 ]

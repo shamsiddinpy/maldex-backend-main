@@ -125,20 +125,6 @@ class BannerCarouselListView(APIView):
         serializer = BannerCarouselListSerializer(queryset, many=True, context={'request': request})
         return success_response(serializer.data)
 
-    # @swagger_auto_schema(request_body=BannerCarouselListSerializer,
-    #                      operation_description="Banner create",
-    #                      tags=['Banner Carousel'],
-    #                      responses={201: BannerCarouselListSerializer(many=False)})
-    # def post(self, request):
-    #     valid_fields = {'name', 'product', 'product_id', 'video', 'title1', 'url1', 'title2', 'url2', 'media'}
-    #     unexpected_fields = check_required_key(request, valid_fields)
-    #     if unexpected_fields:
-    #         return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
-    #     serializer = BannerCarouselListSerializer(data=request.data, context={'request': request})
-    #     if serializer.is_valid(raise_exception=True):
-    #         serializer.save()
-    #         return success_created_response(serializer.data)
-    #     return bad_request_response(serializer.errors)
     @swagger_auto_schema(request_body=BannerCarouselListSerializer,
                          operation_description="Banner create",
                          tags=['Banner Carousel'],
@@ -148,22 +134,35 @@ class BannerCarouselListView(APIView):
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
             return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
-
-        try:
-            serializer = BannerCarouselListSerializer(data=request.data, context={'request': request})
-            serializer.is_valid(raise_exception=True)
+        serializer = BannerCarouselListSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
             return success_created_response(serializer.data)
-        except ValidationError as e:
-            return bad_request_response(str(e))
-        except Exception as e:
-            return bad_request_response(f"An unexpected error occurred: {str(e)}")
+        return bad_request_response(serializer.errors)
+    # @swagger_auto_schema(request_body=BannerCarouselListSerializer,
+    #                      operation_description="Banner create",
+    #                      tags=['Banner Carousel'],
+    #                      responses={201: BannerCarouselListSerializer(many=False)})
+    # def post(self, request):
+    #     valid_fields = {'name', 'product', 'product_id', 'video', 'title1', 'url1', 'title2', 'url2', 'media'}
+    #     unexpected_fields = check_required_key(request, valid_fields)
+    #     if unexpected_fields:
+    #         return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
+    #
+    #     try:
+    #         serializer = BannerCarouselListSerializer(data=request.data, context={'request': request})
+    #         serializer.is_valid(raise_exception=True)
+    #         serializer.save()
+    #         return success_created_response(serializer.data)
+    #     except ValidationError as e:
+    #         return bad_request_response(str(e))
+    #     except Exception as e:
+    #         return bad_request_response(f"An unexpected error occurred: {str(e)}")
 
 
 class BannerCarouselDetailView(APIView):
     permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
-    lookup_field = 'id'
 
     @swagger_auto_schema(operation_description="Retrieve Banners",
                          tags=['Banner Carousel'],
@@ -173,70 +172,31 @@ class BannerCarouselDetailView(APIView):
         serializer = BannerCarouselListSerializer(queryset, context={'request': request, })
         return success_response(serializer.data)
 
-    @swagger_auto_schema(
-        request_body=BannerCarouselListSerializer,
-        operation_description="Banners update",
-        tags=['Banner Carousel'],
-        responses={200: BannerCarouselListSerializer(many=False)}
-    )
+    @swagger_auto_schema(request_body=BannerCarouselListSerializer,
+                         operation_description="Banners update",
+                         tags=['Banner Carousel'],
+                         responses={200: BannerCarouselListSerializer(many=False)})
     def put(self, request, pk):
         valid_fields = {'name'}
         unexpected_fields = check_required_key(request, valid_fields)
         if unexpected_fields:
-            return Response({"error": f"Unexpected fields: {', '.join(unexpected_fields)}"},
-                            status=HTTP_400_BAD_REQUEST)
+            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
 
-        try:
-            banners = BannerCarousel.objects.all().order_by('id')
-            banner = banners[int(pk) - 1]
-        except IndexError:
-            return Response({"error": "Banner not found"}, status=HTTP_404_NOT_FOUND)
-
-        serializer = BannerListSerializer(instance=banner, data=request.data, context={'request': request})
-        if serializer.is_valid():
+        queryset = get_object_or_404(BannerCarousel, pk=pk)
+        serializer = BannerListSerializer(instance=queryset, data=request.data, context={'request': request})
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return Response(serializer.data, status=HTTP_200_OK)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+            return success_response(serializer.data)
+        return bad_request_response(serializer.errors)
 
-    # @swagger_auto_schema(request_body=BannerCarouselListSerializer,
-    #                      operation_description="Banners update",
-    #                      tags=['Banner Carousel'],
-    #                      responses={200: BannerCarouselListSerializer(many=False)})
-    # def put(self, request, pk):
-    #     valid_fields = {'name'}
-    #     unexpected_fields = check_required_key(request, valid_fields)
-    #     if unexpected_fields:
-    #         return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
-    #
-    #     queryset = get_object_or_404(BannerCarousel, pk=pk)
-    #     serializer = BannerListSerializer(instance=queryset, data=request.data, context={'request': request})
-    #     if serializer.is_valid(raise_exception=True):
-    #         serializer.save()
-    #         return success_response(serializer.data)
-    #     return bad_request_response(serializer.errors)
-
-    @swagger_auto_schema(
-        operation_description="Delete a Banner",
-        tags=['Banner Carousel'],
-        responses={204: 'No content'}
-    )
+    @swagger_auto_schema(operation_description="Delete a Banners",
+                         tags=['Banner Carousel'],
+                         responses={204: 'No content'})
     def delete(self, request, pk):
-        try:
-            # Barcha banner karousellarni olish
-            banners = BannerCarousel.objects.all()
-            # pk ga teng bo'lgan tartib raqamli bannerni topish
-            banner = banners[int(pk) - 1]  # -1 chunki indeks 0 dan boshlanadi
-            banner.delete()
-            return Response({"message": "Successfully deleted"}, status=HTTP_204_NO_CONTENT)
-        except IndexError:
-            return Response({"error": "Banner not found"}, status=HTTP_404_NOT_FOUND)
-        except Exception as e:
-            return Response({"error": str(e)}, status=HTTP_400_BAD_REQUEST)
-
-    # def delete(self, request, pk):
-    #     banner = BannerCarousel.objects.filter(pk=pk).first()
-    #     if not banner:
-    #         return Response({"detail": "BannerCarousel not found."}, status=HTTP_404_NOT_FOUND)
-    #
-    #     banner.delete()
-    #     return success_deleted_response("Successfully deleted")
+        banner = BannerCarousel.objects.filter(pk=pk).first()
+        # queryset = get_object_or_404(BannerCarousel, pk=pk)
+        print(banner)
+        if not banner:
+            return bad_request_response(f"{pk} does not exist")
+        banner.delete()
+        return success_deleted_response("Successfully deleted")
