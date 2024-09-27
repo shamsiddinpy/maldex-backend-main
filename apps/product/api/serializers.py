@@ -75,12 +75,8 @@ class CategoryListSerializers(serializers.ModelSerializer):
         instance.order = validated_data.get('order', instance.order_top)
         instance.name = validated_data.get('name', instance.name)
         instance.parent = validated_data.get('parent', instance.parent)
-        # instance.is_popular = validated_data.get('is_popular', instance.is_popular)
-        if 'is_available' in validated_data:
-            instance.is_available = validated_data['is_available']
-        if 'is_popular' in validated_data:
-            instance.is_popular = validated_data['is_popular']
-
+        instance.is_popular = validated_data.get('is_popular', instance.is_popular)
+        instance.is_available = validated_data.get('is_available', instance.is_available)
         instance.is_hit = validated_data.get('is_hit', instance.is_hit)
         instance.is_new = validated_data.get('is_new', instance.is_new)
         items = validated_data.pop('items', instance.discounts)

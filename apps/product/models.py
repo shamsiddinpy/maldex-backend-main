@@ -64,7 +64,6 @@ class ProductCategories(models.Model):
             popular_categories = ProductCategories.objects.filter(
                 is_popular=True, is_available=True, parent=None).order_by('order_top')
             self.order_top = (popular_categories.last().order_top + 1) if popular_categories.exists() else 1
-
         super().save(*args, **kwargs)
 
     class Meta:

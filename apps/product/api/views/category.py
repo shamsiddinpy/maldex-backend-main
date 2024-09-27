@@ -120,6 +120,24 @@ class CategoryDetailView(APIView):
         data.pop('logo', None)
         data.pop('icon', None)
 
+        is_popular = data.get('is_popular')
+        is_available = data.get('is_available')
+
+        # is_popular ni tekshiramiz
+        if is_popular is not None:
+            if is_popular:
+                # True bo'lsa, mashhur kategoriyalarga qo'shamiz
+                data['is_popular'] = True
+            else:
+                # False bo'lsa, mashhur kategoriyalardan olib tashlaymiz
+                data['is_popular'] = False
+
+        if is_available is not None:
+            if is_available:
+                data['is_available'] = True
+            else:
+                data['is_available'] = False
+
         serializers = CategoryListSerializers(instance=queryset, data=data, context={
             'request': request,
             'logo': request.FILES.get('logo', None),
@@ -247,7 +265,6 @@ def get_all_subcategories(request):
 
 class ExternalCategoryList(APIView):
     permission_classes = [AllowAny]
-
 
     @swagger_auto_schema(
         operation_description="Retrieve category or sub categories for home view",
