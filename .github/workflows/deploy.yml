@@ -1,0 +1,28 @@
+name: Update Backend
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # - name: Install SSH
+    #   run: sudo apt-get update && sudo apt-get install -y openssh-client
+
+    - name: Connect to server and run commands
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      run: |
+        mkdir -p ~/.ssh
+        touch ~/.ssh/id_rsa
+        chmod 777 ~/.ssh/id_rsa
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H 5.35.82.80 >> ~/.ssh/known_hosts
+        ssh -i ~/.ssh/id_rsa ubuntu@5.35.82.80 "sudo updatebackend"
