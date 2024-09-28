@@ -1,17 +1,12 @@
 from django.core.cache import cache
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
-from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet
 
 from apps.product.api.serializers import (
     CategoryListSerializers, MainCategorySerializer, CategoryProductsSerializer, SubCategorySerializer,
@@ -23,7 +18,7 @@ from apps.product.models import ProductCategories, ExternalCategory, Products
 from utils.pagination import StandardResultsSetPagination
 from utils.responses import bad_request_response, success_response, success_created_response, success_deleted_response
 
-CACHE_TTL = 20
+# CACHE_TTL = 20
 
 
 class CategoryListView(APIView):
@@ -41,22 +36,22 @@ class CategoryListView(APIView):
 
     )
     def get(self, request):
-        cache_key = 'home_category'
-        cache_data = cache.get(cache_key)
-        if cache_data is not None:
-            return success_response(cache_data)
+        # cache_key = 'home_category'
+        # cache_data = cache.get(cache_key)
+        # if cache_data is not None:
+        #     return success_response(cache_data)
         queryset = ProductCategories.objects.all().select_related('parent').prefetch_related('children__parent').filter(
             parent=None).order_by('order')
 
         filterset = ProductCategoryFilter(request.GET, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
-        is_popular = bool(request.query_params.get('is_popular', None))
+        is_popular = request.query_params.get('is_popular', None)
         if is_popular is True:
             queryset = queryset.order_by('order_top')
         serializers = MainCategorySerializer(queryset.order_by('-is_available', 'order', 'order_by_site'), many=True,
                                              context={'request': request})
-        cache.set(cache_key, serializers.data, CACHE_TTL)
+        # cache.set(cache_key, serializers.data, CACHE_TTL)
         return success_response(serializers.data)
 
     @swagger_auto_schema(
@@ -71,8 +66,8 @@ class CategoryListView(APIView):
         """
         serializers = MainCategorySerializer(data=request.data, context={'request': request})
         if serializers.is_valid(raise_exception=True):
-            serializers.save()
-            cache.delete('home_category')
+            category = serializers.save()
+            # cache.delete('home_category')
             return success_created_response(serializers.data)
         return bad_request_response(serializers.errors)
 
@@ -84,8 +79,8 @@ class CategoryDetailView(APIView):
     pagination_class = StandardResultsSetPagination
     permission_classes = [AllowAny]
 
-    def get_cache_key(self, pk):
-        return f'category_detail_{pk}'  # Todo
+    # def get_cache_key(self, pk):
+    #     return f'category_detail_{pk}'  # Todo
 
     @swagger_auto_schema(
         operation_description="Retrieve a specific product category",
@@ -96,13 +91,13 @@ class CategoryDetailView(APIView):
         """
         Retrieve a specific product category.
         """
-        cache_key = self.get_cache_key(pk)
-        cache_data = cache.get(cache_key)
-        if cache_data is not None:
-            return success_response(cache_data)
+        # cache_key = self.get_cache_key(pk)
+        # cache_data = cache.get(cache_key)
+        # if cache_data is not None:
+        #     return success_response(cache_data)
         queryset = get_object_or_404(ProductCategories, pk=pk)
         serializers = MainCategorySerializer(queryset, context={'request': request})
-        cache.set(cache_key, serializers.data, CACHE_TTL)
+        # cache.set(cache_key, serializers.data, CACHE_TTL)
         return success_response(serializers.data)
 
     @swagger_auto_schema(
@@ -112,32 +107,10 @@ class CategoryDetailView(APIView):
         responses={200: CategoryListSerializers(many=False)}
     )
     def put(self, request, pk):
-        """
-        Update a specific product category.
-        """
         queryset = get_object_or_404(ProductCategories, pk=pk)
         data = request.data.copy()
         data.pop('logo', None)
         data.pop('icon', None)
-
-        is_popular = data.get('is_popular')
-        is_available = data.get('is_available')
-
-        # is_popular ni tekshiramiz
-        if is_popular is not None:
-            if is_popular:
-                # True bo'lsa, mashhur kategoriyalarga qo'shamiz
-                data['is_popular'] = True
-            else:
-                # False bo'lsa, mashhur kategoriyalardan olib tashlaymiz
-                data['is_popular'] = False
-
-        if is_available is not None:
-            if is_available:
-                data['is_available'] = True
-            else:
-                data['is_available'] = False
-
         serializers = CategoryListSerializers(instance=queryset, data=data, context={
             'request': request,
             'logo': request.FILES.get('logo', None),
@@ -145,7 +118,7 @@ class CategoryDetailView(APIView):
         })
         if serializers.is_valid(raise_exception=True):
             serializers.save()
-            cache.delete(self.get_cache_key(pk))
+            # cache.delete(self.get_cache_key(pk))
             return success_response(serializers.data)
         return bad_request_response(serializers.errors)
 
@@ -160,7 +133,7 @@ class CategoryDetailView(APIView):
         """
         queryset = get_object_or_404(ProductCategories, pk=pk)
         queryset.delete()
-        cache.delete(self.get_cache_key(pk))
+        # cache.delete(self.get_cache_key(pk))
         return success_deleted_response("Successfully deleted")
 
 

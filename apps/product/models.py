@@ -73,7 +73,6 @@ class ProductCategories(models.Model):
         verbose_name_plural = "Категория"
 
 
-
 @receiver(pre_save, sender=ProductCategories)
 def pre_save_category(sender, instance, **kwargs):
     old = ProductCategories.objects.filter(pk=instance.pk).first()
