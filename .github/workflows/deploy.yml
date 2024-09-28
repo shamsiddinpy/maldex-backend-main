@@ -22,7 +22,7 @@ jobs:
         eval $(ssh-agent -s)
         mkdir -p ~/.ssh
         chmod 700 ~/.ssh/
-        echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+        echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
         chmod 600 ~/.ssh/id_rsa
         ssh-keyscan 5.35.82.80 >> ~/.ssh/known_hosts
         ssh -i ~/.ssh/id_rsa ubuntu@5.35.82.80 "sudo updatebackend"
