@@ -19,10 +19,8 @@ jobs:
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       run: |
-        eval $(ssh-agent -s)
         mkdir -p ~/.ssh
-        chmod 700 ~/.ssh/
-        echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan 5.35.82.80 >> ~/.ssh/known_hosts
+        ssh-keyscan -p 22 5.35.82.80 >> ~/.ssh/known_hosts
         ssh -i ~/.ssh/id_rsa ubuntu@5.35.82.80 "sudo updatebackend"
