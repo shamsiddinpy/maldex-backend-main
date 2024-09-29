@@ -199,8 +199,6 @@ class BannerCarouselDetailView(APIView):
                          tags=['Banner Carousel'],
                          responses={204: 'No content'})
     def delete(self, request, pk):
-        banner = BannerCarousel.objects.filter(pk=pk).first()
-        if not banner:
-            return bad_request_response(f"{pk} does not exist")
-        banner.delete()
+        queryset = get_object_or_404(BannerCarousel, pk=pk)
+        queryset.delete()
         return success_deleted_response("Successfully deleted")
