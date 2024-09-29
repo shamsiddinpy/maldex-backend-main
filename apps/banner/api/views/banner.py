@@ -1,11 +1,15 @@
+import logging
+
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_200_OK
 from rest_framework.views import APIView
 
+logger = logging.getLogger(__name__)
 from apps.banner.models import *
 from apps.banner.api.serializers import (
     BannerListSerializer,
@@ -115,6 +119,8 @@ class BannerProductDetailView(APIView):
 
 class BannerCarouselListView(APIView):
     permission_classes = [AllowAny]
+    parser_classes = [MultiPartParser]  # Fayllar yuklash uchun kerak
+
     """ Banner Carousel Get View """
 
     @swagger_auto_schema(operation_description="Retrieve a list of banner carousel",

@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from apps.banner.models import *
@@ -64,6 +66,9 @@ class BannerListSerializer(serializers.ModelSerializer):
         return data.data
 
 
+logger = logging.getLogger(__name__)
+
+
 class BannerCarouselListSerializer(serializers.ModelSerializer):
     product = ProductDetailSerializers(read_only=True)
     product_id = serializers.CharField(write_only=True, required=True)
@@ -82,7 +87,7 @@ class BannerCarouselListSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         product_id = validated_data.pop('product_id', None)
         product = get_object_or_404(Products, id=product_id) if product_id else None
-        media = validated_data.get('media')
+        media = validated_data.pop('media')
         media_type = media.content_type.split('/')[0]
         validated_data['media_type'] = media_type
         buttons_data = []

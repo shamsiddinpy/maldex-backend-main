@@ -154,6 +154,7 @@ SWAGGER_SETTINGS = {
     "TITLE": "Maldex backend",
     "DESCRIPTION": "Maldex backend",
     "VERSION": "0.1.0",
+
 }
 
 CKEDITOR_5_CONFIGS = {

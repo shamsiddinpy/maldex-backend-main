@@ -1,4 +1,3 @@
-from django.core.cache import cache
 from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -17,6 +16,7 @@ from apps.product.filters import ProductCategoryFilter
 from apps.product.models import ProductCategories, ExternalCategory, Products
 from utils.pagination import StandardResultsSetPagination
 from utils.responses import bad_request_response, success_response, success_created_response, success_deleted_response
+
 
 # CACHE_TTL = 20
 

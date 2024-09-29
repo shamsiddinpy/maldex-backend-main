@@ -19,7 +19,7 @@ schema_view = get_schema_view(
         description="Maldex Backend",
     ),
     public=True,
-    permission_classes=(permissions.AllowAny,),
+    permission_classes=[permissions.AllowAny,]
 )
 
 # Define the urlpatterns for the Django application
