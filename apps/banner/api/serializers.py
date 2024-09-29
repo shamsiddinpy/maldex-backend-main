@@ -71,7 +71,7 @@ logger = logging.getLogger(__name__)
 
 class BannerCarouselListSerializer(serializers.ModelSerializer):
     product = ProductDetailSerializers(read_only=True)
-    product_id = serializers.CharField(write_only=True, required=True)
+    product_id = serializers.CharField(write_only=True, required=False)
     media_type = serializers.CharField(read_only=True)
     buttons = ButtonSerializer(many=True, read_only=True)
     title1 = serializers.CharField(write_only=True, required=False)
@@ -87,9 +87,12 @@ class BannerCarouselListSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         product_id = validated_data.pop('product_id', None)
         product = get_object_or_404(Products, id=product_id) if product_id else None
-        media = validated_data.pop('media')
-        media_type = media.content_type.split('/')[0]
-        validated_data['media_type'] = media_type
+        media = validated_data.pop('media', None)
+        if media:
+            media_type = media.content_type.split('/')[0]
+            validated_data['media_type'] = media_type
+        else:
+            validated_data['media'] = None
         buttons_data = []
         title1 = validated_data.pop('title1', None)
         url1 = validated_data.pop('url1', None)

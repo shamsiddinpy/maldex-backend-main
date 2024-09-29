@@ -49,7 +49,7 @@ class BannerProduct(models.Model):
 class BannerCarousel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name='Уникальный идентификатор')
     name = models.CharField(_('Название баннерной карусели'), max_length=155, null=True, blank=True)
-    media = models.FileField(upload_to='banner_carousel/')
+    media = models.FileField(upload_to='banner_carousel/', blank=True, null=True)
     media_type = models.CharField(max_length=255)
     product = models.ForeignKey(Products, on_delete=models.CASCADE, null=True, blank=True, )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата публикации')
