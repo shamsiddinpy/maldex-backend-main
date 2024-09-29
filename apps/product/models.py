@@ -93,7 +93,6 @@ class ProductCategories(models.Model):
                 for category in categories_to_shift:
                     category.order_top += 1
                     category.save(update_fields=['order_top'])
-
         super().save(*args, **kwargs)
 
     class Meta:
