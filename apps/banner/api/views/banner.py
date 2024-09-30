@@ -169,6 +169,7 @@ class BannerCarouselListView(APIView):
 class BannerCarouselDetailView(APIView):
     permission_classes = [AllowAny]
     pagination_class = StandardResultsSetPagination
+    parser_classes = [MultiPartParser]
 
     @swagger_auto_schema(operation_description="Retrieve Banners",
                          tags=['Banner Carousel'],
@@ -178,22 +179,37 @@ class BannerCarouselDetailView(APIView):
         serializer = BannerCarouselListSerializer(queryset, context={'request': request, })
         return success_response(serializer.data)
 
-    @swagger_auto_schema(request_body=BannerCarouselListSerializer,
-                         operation_description="Banners update",
-                         tags=['Banner Carousel'],
-                         responses={200: BannerCarouselListSerializer(many=False)})
-    def put(self, request, pk):
-        valid_fields = {'name'}
-        unexpected_fields = check_required_key(request, valid_fields)
-        if unexpected_fields:
-            return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
+    # @swagger_auto_schema(request_body=BannerCarouselListSerializer,
+    #                      operation_description="Banners update",
+    #                      tags=['Banner Carousel'],
+    #                      responses={200: BannerCarouselListSerializer(many=False)})
+    # def put(self, request, pk):
+    #     valid_fields = {'name'}
+    #     unexpected_fields = check_required_key(request, valid_fields)
+    #     if unexpected_fields:
+    #         return bad_request_response(f"Unexpected fields: {', '.join(unexpected_fields)}")
+    #
+    #     queryset = get_object_or_404(BannerCarousel, pk=pk)
+    #     serializer = BannerListSerializer(instance=queryset, data=request.data, context={'request': request})
+    #     if serializer.is_valid(raise_exception=True):
+    #         serializer.save()
+    #         return success_response(serializer.data)
+    #     return bad_request_response(serializer.errors)
 
-        queryset = get_object_or_404(BannerCarousel, pk=pk)
-        serializer = BannerListSerializer(instance=queryset, data=request.data, context={'request': request})
-        if serializer.is_valid(raise_exception=True):
+    @swagger_auto_schema(
+        request_body=BannerCarouselListSerializer,
+        operation_description="Update Banner Carousel",
+        tags=['Banner Carousel'],
+        responses={200: BannerCarouselListSerializer(many=False)}
+    )
+    def put(self, request, pk):
+        banner_carousel = get_object_or_404(BannerCarousel, pk=pk)
+        serializer = BannerCarouselListSerializer(instance=banner_carousel, data=request.data, partial=True)
+
+        if serializer.is_valid():
             serializer.save()
-            return success_response(serializer.data)
-        return bad_request_response(serializer.errors)
+            return Response(serializer.data, status=HTTP_200_OK)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(operation_description="Delete a Banners",
                          tags=['Banner Carousel'],
