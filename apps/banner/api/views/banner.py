@@ -93,7 +93,7 @@ class BannerProductDetailView(APIView):
     @swagger_auto_schema(request_body=BannerProductListSerializer,
                          operation_description="Banners product update",
                          tags=['Banner Product'],
-                         responses={200: BannerProductListSerializer(many=False)},)
+                         responses={200: BannerProductListSerializer(many=False)}, )
     def put(self, request, pk):
         valid_fields = {'product_id'}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -204,7 +204,8 @@ class BannerCarouselDetailView(APIView):
     )
     def put(self, request, pk):
         banner_carousel = get_object_or_404(BannerCarousel, pk=pk)
-        serializer = BannerCarouselListSerializer(instance=banner_carousel, data=request.data, partial=True)
+        serializer = BannerCarouselListSerializer(instance=banner_carousel, data=request.data, partial=True,
+                                                  context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=HTTP_200_OK)

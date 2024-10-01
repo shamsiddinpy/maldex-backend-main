@@ -107,42 +107,6 @@ class BannerCarouselListSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
 
-    # def update(self, instance, validated_data):
-    #     product_id = validated_data.pop('product_id', None)
-    #     product = get_object_or_404(Products, id=product_id) if product_id else None
-    #
-    #     media = validated_data.pop('media', None)
-    #     if media:
-    #         instance.media = media
-    #         instance.media_type = media.content_type.split('/')[0]
-    #     elif media is None and 'media' in validated_data:
-    #         instance.media = None
-    #         instance.media_type = None
-    #
-    #     buttons_data = []
-    #     title1 = validated_data.pop('title1', None)
-    #     url1 = validated_data.pop('url1', None)
-    #     title2 = validated_data.pop('title2', None)
-    #     url2 = validated_data.pop('url2', None)
-    #
-    #     if title1 and url1:
-    #         buttons_data.append({'title': title1, 'url': url1})
-    #     if title2 and url2:
-    #         buttons_data.append({'title': title2, 'url': url2})
-    #
-    #     # Update all other fields
-    #     for attr, value in validated_data.items():
-    #         setattr(instance, attr, value)
-    #
-    #     instance.product = product
-    #     instance.save()
-    #
-    #     # Update or create buttons
-    #     instance.buttons.all().delete()  # Remove existing buttons
-    #     create_banner_buttons(buttons_data, instance)
-    #
-    #     return instance #Todt
-
     def validate_media(self, media):
         media_type = media.content_type.split('/')[0]
         if media_type not in ['image', 'video']:
