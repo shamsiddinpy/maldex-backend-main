@@ -277,7 +277,7 @@ class CategoryMove(APIView):
         categories_data = request.data.pop('categories_data')
         categories_data = [categories_data] if not isinstance(categories_data, list) else categories_data
         request.data['categories_data'] = categories_data
-        serializer = CategoryMoveSerializer(data=request.data)
+        serializer = CategoryMoveSerializer(data=request.data, context={'request': request})
 
         if serializer.is_valid():
             serializer.save()
