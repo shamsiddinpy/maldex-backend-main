@@ -15,7 +15,7 @@ urlpatterns = [
     path('product/<int:pk>/', gift_basket.GiftsBasketProductDetailView.as_view()),
     path('image/<int:pk>/', gift_basket.GiftsBasketImageDetailSerializers.as_view()),
 
-    path('set/catalogs/', sets.SetCategoryListView.as_view()),
+    path('set/catalog/', sets.SetCategoryListView.as_view()),
     path('set/catalog/<int:pk>/', sets.SetCatalogDetailView.as_view()),
 
     path('set/product/<int:pk>/', sets.SetProductDetailView.as_view()),

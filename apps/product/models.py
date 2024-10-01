@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 import uuid
 
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
@@ -49,26 +49,8 @@ class ProductCategories(models.Model):
     def __str__(self):
         return self.name
 
-    # def save(self, *args, **kwargs):
-    #     """Override save method to generate ID and order if not provided."""
-    #     if not self.id:
-    #         last_instance = ProductCategories.objects.all().order_by('id').last()
-    #         next_id = 1 if not last_instance else last_instance.id + 1
-    #         self.id = next_id
-    #
-    #     if not self.order and self.is_available and self.parent is None:
-    #         popular_categories = ProductCategories.objects.filter(is_available=True, parent=None).order_by('order')
-    #         self.order = (popular_categories.last().order + 1) if popular_categories.exists() else 1
-    #
-    #     if not self.order_top and self.is_available and self.is_popular and self.parent is None:
-    #         popular_categories = ProductCategories.objects.filter(
-    #             is_popular=True, is_available=True, parent=None).order_by('order_top')
-    #         self.order_top = (popular_categories.last().order_top + 1) if popular_categories.exists() else 1
-    #     super().save(*args, **kwargs)
-
     def save(self, *args, **kwargs):
-        """Override save method to manage order_top logic and reordering."""
-
+        """Override save method to generate ID and order if not provided."""
         if not self.id:
             last_instance = ProductCategories.objects.all().order_by('id').last()
             next_id = 1 if not last_instance else last_instance.id + 1
@@ -78,21 +60,30 @@ class ProductCategories(models.Model):
             popular_categories = ProductCategories.objects.filter(is_available=True, parent=None).order_by('order')
             self.order = (popular_categories.last().order + 1) if popular_categories.exists() else 1
 
-        # order_top bo'yicha hisoblash
-        if self.is_available and self.is_popular and self.parent is None:
-            if not self.order_top:
-                max_order_top = ProductCategories.objects.filter(
-                    is_popular=True, is_available=True, parent=None
-                ).aggregate(models.Max('order_top'))['order_top__max']
+        if not self.order_top and self.is_available and self.is_popular and self.parent is None:
+            popular_categories = ProductCategories.objects.filter(
+                is_popular=True, is_available=True, parent=None).order_by('order_top')
+            self.order_top = (popular_categories.last().order_top + 1) if popular_categories.exists() else 1
+        super().save(*args, **kwargs)
 
-                self.order_top = 1 if max_order_top is None else max_order_top + 1
+    def save(self, *args, **kwargs):
+        """Override save method to generate ID and order if not provided."""
+        if not self.id:
+            last_instance = ProductCategories.objects.all().order_by('id').last()
+            next_id = 1 if not last_instance else last_instance.id + 1
+            self.id = next_id
+
+        if not self.order and self.is_available and self.parent is None:
+            popular_categories = ProductCategories.objects.filter(is_available=True, parent=None).order_by('order')
+            last_order = popular_categories.last().order if popular_categories.exists() else 0
+            self.order = last_order + 1
+
+        if self.is_popular and self.parent is None:
+            if not self.order_top:
+                last_order_top = ProductCategories.objects.aggregate(Max('order_top'))['order_top__max']
+                self.order_top = last_order_top + 1
             else:
-                categories_to_shift = ProductCategories.objects.filter(
-                    is_popular=True, is_available=True, parent=None, order_top__gte=self.order_top
-                ).exclude(id=self.id).order_by('order_top')
-                for category in categories_to_shift:
-                    category.order_top += 1
-                    category.save(update_fields=['order_top'])
+                self.order_top = None
         super().save(*args, **kwargs)
 
     class Meta:

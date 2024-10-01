@@ -24,6 +24,8 @@ from utils.responses import (
 
 class BannerListView(APIView):
     permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
+
     """ Banner Get View """
 
     @swagger_auto_schema(operation_description="Retrieve a list of banners",
@@ -53,6 +55,7 @@ class BannerListView(APIView):
 
 class BannerDetailView(APIView):
     permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
 
     @swagger_auto_schema(operation_description="Retrieve Banners",
                          tags=['Banners'],
@@ -85,11 +88,12 @@ class BannerDetailView(APIView):
 
 class BannerProductDetailView(APIView):
     permission_classes = [AllowAny]
+    pagination_class = StandardResultsSetPagination
 
     @swagger_auto_schema(request_body=BannerProductListSerializer,
                          operation_description="Banners product update",
                          tags=['Banner Product'],
-                         responses={200: BannerProductListSerializer(many=False)})
+                         responses={200: BannerProductListSerializer(many=False)},)
     def put(self, request, pk):
         valid_fields = {'product_id'}
         unexpected_fields = check_required_key(request, valid_fields)
@@ -120,7 +124,8 @@ class BannerCarouselListView(APIView):
 
     @swagger_auto_schema(operation_description="Retrieve a list of banner carousel",
                          tags=['Banner Carousel'],
-                         responses={200: BannerCarouselListSerializer(many=True)})
+                         responses={200: BannerCarouselListSerializer(many=True)},
+                         pagination_class=StandardResultsSetPagination)
     def get(self, request):
         queryset = BannerCarousel.objects.all().order_by('-created_at')
         serializer = BannerCarouselListSerializer(queryset, many=True, context={'request': request})
@@ -200,7 +205,6 @@ class BannerCarouselDetailView(APIView):
     def put(self, request, pk):
         banner_carousel = get_object_or_404(BannerCarousel, pk=pk)
         serializer = BannerCarouselListSerializer(instance=banner_carousel, data=request.data, partial=True)
-
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=HTTP_200_OK)

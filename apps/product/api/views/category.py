@@ -66,7 +66,7 @@ class CategoryListView(APIView):
         """
         serializers = MainCategorySerializer(data=request.data, context={'request': request})
         if serializers.is_valid(raise_exception=True):
-            category = serializers.save()
+            serializers.save()
             # cache.delete('home_category')
             return success_created_response(serializers.data)
         return bad_request_response(serializers.errors)
