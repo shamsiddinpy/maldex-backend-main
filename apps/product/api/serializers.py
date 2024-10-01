@@ -385,11 +385,18 @@ class ProductDetailSerializers(serializers.ModelSerializer):
             self.context['request'].build_absolute_uri(image.image.url),
         } for image in images]
 
+    # def get_is_liked(self, obj):
+    #     user = self.context.get('request').user
+    #     if not user.is_authenticated:
+    #         return False
+    #     return Like.objects.filter(user=user, product=obj).exists()
+
     def get_is_liked(self, obj):
-        user = self.context['request'].user
-        if not user.is_authenticated:
+        request = self.context.get('request', None)
+        if request is None or not request.user.is_authenticated:
             return False
-        return Like.objects.filter(user=user, product=obj).exists()
+        else:
+            return Like.objects.filter(user=request.user, product=obj).exists()
 
 
 class ProductListSerializers(ProductDetailSerializers):
